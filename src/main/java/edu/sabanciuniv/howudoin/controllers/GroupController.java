@@ -2,6 +2,7 @@ package edu.sabanciuniv.howudoin.controllers;
 
 
 import edu.sabanciuniv.howudoin.models.Group;
+import edu.sabanciuniv.howudoin.models.GroupMessage;
 import edu.sabanciuniv.howudoin.services.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -38,31 +39,28 @@ public class GroupController {
         return groupService.getGroupById(groupId);
     }
 
-    //Message class is not yet implemented
-    /*
+
     @GetMapping("/groups/{groupId}/messages")
-    public List<Message> getMessages(@PathVariable Integer groupId)
+    public List<GroupMessage> getGroupMessages(@PathVariable Integer groupId)
     {
         Group group = groupService.getGroupById(groupId);
         if (group == null) {
             throw new IllegalArgumentException("Group not found with ID: " + groupId);
         }
 
-        return groupService.getMessages(groupId);
+        return groupService.getGroupMessages(groupId);
     }
 
     @PostMapping("/groups/{groupId}/send")
-    public Message sendMessages(@PathVariable Integer groupId, @RequestBody Message message)
+    public GroupMessage sendMessages(@PathVariable Integer groupId, @RequestBody GroupMessage groupMessage)
     {
         Group group = groupService.getGroupById(groupId);
         if (group == null) {
             throw new IllegalArgumentException("Group not found with ID: " + groupId);
         }
 
-        Message sentMessage = groupService.sendMessage(groupId, message);
-        return sentMessage;
+        return groupService.sendGroupMessage(groupId, groupMessage);
     }
-     */
 
 
 

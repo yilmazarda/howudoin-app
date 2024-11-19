@@ -18,6 +18,5 @@ public class Group {
 
     private List<String> users;
 
-    //to be added
-    // private List<Message> messages;
+    private List<GroupMessage> groupMessages;
 }
