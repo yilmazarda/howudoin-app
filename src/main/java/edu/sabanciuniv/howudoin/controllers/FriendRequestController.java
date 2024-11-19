@@ -2,7 +2,6 @@ package edu.sabanciuniv.howudoin.controllers;
 
 
 import edu.sabanciuniv.howudoin.models.FriendRequest;
-import edu.sabanciuniv.howudoin.models.User;
 import edu.sabanciuniv.howudoin.services.FriendRequestService;
 import edu.sabanciuniv.howudoin.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +21,11 @@ public class FriendRequestController {
     @Autowired
     private UserService userService;
 
-    /*
     @GetMapping("/user")
-    public List<FriendRequest> getAllUsers()
+    public List<FriendRequest> getAllFriendRequests()
     {
         return friendRequestService.getAllFriendRequests();
     }
-    */
 
     @PostMapping("/friends/add")
     public FriendRequest addRequest(@RequestBody FriendRequest friendRequest)
