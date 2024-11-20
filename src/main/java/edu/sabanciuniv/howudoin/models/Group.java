@@ -15,7 +15,7 @@ import java.util.List;
 
 public class Group {
     @Id
-    private String groupId;
+    private Integer groupId;
 
     private String name;
 

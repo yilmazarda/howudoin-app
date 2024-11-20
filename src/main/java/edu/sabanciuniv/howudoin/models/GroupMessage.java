@@ -13,6 +13,6 @@ public class GroupMessage {
     private String content;
     private String senderEmail;
     private long timeSpan;
-    private String groupId;
+    private Integer groupId;
 
 }

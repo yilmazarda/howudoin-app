@@ -23,7 +23,7 @@ public class GroupService {
         groupRepository.save(group);
     }
 
-    public Group getGroupById (String groupId) {
+    public Group getGroupById (Integer groupId) {
         Group group = groupRepository.findById(groupId).orElse(null);
 
         if(group == null) {
@@ -33,7 +33,7 @@ public class GroupService {
         return group;
     }
 
-    public void addMemberToGroup(String groupId, String userEmail) {
+    public void addMemberToGroup(Integer groupId, String userEmail) {
         Group group = groupRepository.findById(groupId).orElse(null);
 
         if(group == null) {
@@ -44,7 +44,7 @@ public class GroupService {
         groupRepository.save(group);
     }
 
-    public List<String> getMembers(String groupId) {
+    public List<String> getMembers(Integer groupId) {
         Group group = groupRepository.findById(groupId).orElse(null);
         if(group == null) {
             throw new RuntimeException("User not found");
@@ -53,7 +53,7 @@ public class GroupService {
         return group.getUsers();
     }
 
-    public List<GroupMessage> getGroupMessages(String groupId) {
+    public List<GroupMessage> getGroupMessages(Integer groupId) {
         Group group = groupRepository.findById(groupId).orElse(null);
         if(group == null) {
             throw new RuntimeException("Group not found");
@@ -62,7 +62,7 @@ public class GroupService {
         return group.getGroupMessages();
     }
 
-     public GroupMessage sendGroupMessage(String groupId, GroupMessage groupMessage) {
+     public GroupMessage sendGroupMessage(Integer groupId, GroupMessage groupMessage) {
         // Fetch the group by ID
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found with ID: " + groupId));

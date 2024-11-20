@@ -11,22 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/groups")
 public class GroupController {
 
     @Autowired
     private GroupService groupService;
 
-    @GetMapping("/groups")
-    public ResponseEntity<List<Group>> getAllGroups() {
-        List<Group> groups = groupService.getAllGroups();
-        if(groups.isEmpty()) {
-            return ResponseEntity.status(404).body(null);
-        }
-        return ResponseEntity.ok(groups);
-    }
 
-
-    @PostMapping("/groups/create")
+    @PostMapping("/create")
     public Group addGroup(@RequestBody Group group)
     {
         groupService.addGroup(group);
@@ -34,8 +26,8 @@ public class GroupController {
         return group;
     }
 
-    @PostMapping("/groups/{groupId}/add-member")
-    public Group addMemberToGroup(@PathVariable String groupId, @RequestParam String userEmail)
+    @PostMapping("/{groupId}/add-member")
+    public Group addMemberToGroup(@PathVariable Integer groupId, @RequestParam String userEmail)
     {
         // Fetch the group
         Group group = groupService.getGroupById(groupId);
@@ -51,8 +43,8 @@ public class GroupController {
     }
 
 
-    @GetMapping("/groups/{groupId}/messages")
-    public List<GroupMessage> getGroupMessages(@PathVariable String groupId)
+    @GetMapping("/{groupId}/messages")
+    public List<GroupMessage> getGroupMessages(@PathVariable Integer groupId)
     {
         Group group = groupService.getGroupById(groupId);
         if (group == null) {
@@ -62,8 +54,8 @@ public class GroupController {
         return groupService.getGroupMessages(groupId);
     }
 
-    @PostMapping("/groups/{groupId}/send")
-    public GroupMessage sendMessages(@PathVariable String groupId, @RequestBody GroupMessage groupMessage)
+    @PostMapping("/{groupId}/send")
+    public GroupMessage sendMessages(@PathVariable Integer groupId, @RequestBody GroupMessage groupMessage)
     {
         Group group = groupService.getGroupById(groupId);
         if (group == null) {
@@ -75,8 +67,8 @@ public class GroupController {
 
 
 
-    @GetMapping("/groups/{groupId}/members")
-    public List<String> getMembers(@PathVariable String groupId)
+    @GetMapping("/{groupId}/members")
+    public List<String> getMembers(@PathVariable Integer groupId)
     {
         Group group = groupService.getGroupById(groupId);
         if (group == null) {
