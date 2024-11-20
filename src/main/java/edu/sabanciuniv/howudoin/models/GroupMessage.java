@@ -9,9 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GroupMessage {
     private Integer id;
+
     private String content;
     private String senderEmail;
     private long timeSpan;
-    private Integer groupId;
+    private String groupId;
 
 }

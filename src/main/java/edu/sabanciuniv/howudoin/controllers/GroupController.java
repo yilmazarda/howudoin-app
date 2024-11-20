@@ -5,6 +5,7 @@ import edu.sabanciuniv.howudoin.models.Group;
 import edu.sabanciuniv.howudoin.models.GroupMessage;
 import edu.sabanciuniv.howudoin.services.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,16 +16,26 @@ public class GroupController {
     @Autowired
     private GroupService groupService;
 
+    @GetMapping("/groups")
+    public ResponseEntity<List<Group>> getAllGroups() {
+        List<Group> groups = groupService.getAllGroups();
+        if(groups.isEmpty()) {
+            return ResponseEntity.status(404).body(null);
+        }
+        return ResponseEntity.ok(groups);
+    }
+
 
     @PostMapping("/groups/create")
     public Group addGroup(@RequestBody Group group)
     {
         groupService.addGroup(group);
+
         return group;
     }
 
     @PostMapping("/groups/{groupId}/add-member")
-    public Group addMemberToGroup(@PathVariable Integer groupId, @RequestBody String userEmail)
+    public Group addMemberToGroup(@PathVariable String groupId, @RequestParam String userEmail)
     {
         // Fetch the group
         Group group = groupService.getGroupById(groupId);
@@ -41,7 +52,7 @@ public class GroupController {
 
 
     @GetMapping("/groups/{groupId}/messages")
-    public List<GroupMessage> getGroupMessages(@PathVariable Integer groupId)
+    public List<GroupMessage> getGroupMessages(@PathVariable String groupId)
     {
         Group group = groupService.getGroupById(groupId);
         if (group == null) {
@@ -52,7 +63,7 @@ public class GroupController {
     }
 
     @PostMapping("/groups/{groupId}/send")
-    public GroupMessage sendMessages(@PathVariable Integer groupId, @RequestBody GroupMessage groupMessage)
+    public GroupMessage sendMessages(@PathVariable String groupId, @RequestBody GroupMessage groupMessage)
     {
         Group group = groupService.getGroupById(groupId);
         if (group == null) {
@@ -65,7 +76,7 @@ public class GroupController {
 
 
     @GetMapping("/groups/{groupId}/members")
-    public List<String> getMembers(@PathVariable Integer groupId)
+    public List<String> getMembers(@PathVariable String groupId)
     {
         Group group = groupService.getGroupById(groupId);
         if (group == null) {

@@ -21,7 +21,7 @@ public class FriendRequestController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/user")
+    @GetMapping("/requests")
     public List<FriendRequest> getAllFriendRequests()
     {
         return friendRequestService.getAllFriendRequests();

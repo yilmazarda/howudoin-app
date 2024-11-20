@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -14,9 +15,11 @@ import java.util.List;
 
 public class Group {
     @Id
-    private int groupId;
+    private String groupId;
 
-    private List<String> users;
+    private String name;
 
-    private List<GroupMessage> groupMessages;
+    private List<String> users = new ArrayList<>();
+
+    private List<GroupMessage> groupMessages = new ArrayList<>();
 }

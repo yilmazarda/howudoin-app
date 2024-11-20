@@ -39,6 +39,9 @@ public class UserService {
         if(senderUser != null && receiverUser != null) {
             senderUser.getFriends().add(receiverUser.getEmail());
             receiverUser.getFriends().add(senderUser.getEmail());
+
+            userRepository.save(senderUser);
+            userRepository.save(receiverUser);
         }
         else
         {

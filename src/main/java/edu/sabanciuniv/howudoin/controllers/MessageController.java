@@ -22,7 +22,7 @@ public class MessageController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<Message>> getMesssages(@RequestBody String userEmail ) {
+    public ResponseEntity<List<Message>> getMesssages(@RequestParam String userEmail ) {
         List<Message> messages = messageService.getMessages(userEmail);
         return ResponseEntity.ok(messages);
     }
