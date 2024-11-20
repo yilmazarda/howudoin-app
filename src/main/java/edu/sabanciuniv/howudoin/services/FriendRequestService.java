@@ -1,9 +1,7 @@
 package edu.sabanciuniv.howudoin.services;
 
 import edu.sabanciuniv.howudoin.models.FriendRequest;
-import edu.sabanciuniv.howudoin.models.User;
 import edu.sabanciuniv.howudoin.repositories.FriendRequestRepository;
-import edu.sabanciuniv.howudoin.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,5 +45,10 @@ public class FriendRequestService {
         {
             return friendRequest;
         }
+    }
+
+    public List<FriendRequest> getFriendRequestsByUserEmail(String email) {
+        // Fetch all friend requests where the user is either the sender or the receiver
+        return friendRequestRepository.findBySenderEmailOrReceiverEmail(email, email);
     }
 }
