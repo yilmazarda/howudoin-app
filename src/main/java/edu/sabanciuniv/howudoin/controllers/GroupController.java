@@ -4,10 +4,13 @@ import edu.sabanciuniv.howudoin.models.Group;
 import edu.sabanciuniv.howudoin.models.GroupMessage;
 import edu.sabanciuniv.howudoin.services.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -18,7 +21,7 @@ public class GroupController {
     private GroupService groupService;
 
     @PostMapping("/create")
-    public Group addGroup(@RequestBody Group group) {
+    public ResponseEntity<Group> addGroup(@RequestBody Group group) {
         // Set the creator's email from the authenticated user
         String creatorEmail = getAuthenticatedUserEmail();
 
@@ -27,82 +30,89 @@ public class GroupController {
 
         // Create the group
         groupService.addGroup(group);
-        return group;
+        return ResponseEntity.ok(group);
     }
 
     @PostMapping("/{groupId}/add-member")
-    public Group addMemberToGroup(@PathVariable Integer groupId, @RequestParam String memberEmail) {
+    public ResponseEntity<?> addMemberToGroup(@PathVariable String groupId, @RequestParam String memberEmail) {
         // Check if the authenticated user is part of the group
         String authenticatedEmail = getAuthenticatedUserEmail();
         Group group = groupService.getGroupById(groupId);
 
         if (group == null) {
-            throw new IllegalArgumentException("Group not found with ID: " + groupId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Group not found with ID: " + groupId);
         }
 
         if (!group.getUsers().contains(authenticatedEmail)) {
-            throw new IllegalArgumentException("User not authorized to add members.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("User not authorized to add members.");
         }
 
         // Add the member to the group
         groupService.addMemberToGroup(groupId, memberEmail);
 
         // Return the updated group
-        return groupService.getGroupById(groupId);
+        return ResponseEntity.ok(groupService.getGroupById(groupId));
     }
 
     @GetMapping("/{groupId}/messages")
-    public List<GroupMessage> getGroupMessages(@PathVariable Integer groupId) {
-        // Check if the authenticated user is part of the group
+    public ResponseEntity<?> getGroupMessages(@PathVariable String groupId) {
         String authenticatedEmail = getAuthenticatedUserEmail();
         Group group = groupService.getGroupById(groupId);
 
         if (group == null) {
-            throw new IllegalArgumentException("Group not found with ID: " + groupId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Group not found with ID: " + groupId);
         }
 
         if (!group.getUsers().contains(authenticatedEmail)) {
-            throw new IllegalArgumentException("User not authorized to view group messages.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("User not authorized to view group messages.");
         }
 
-        return groupService.getGroupMessages(groupId);
+        return ResponseEntity.ok(groupService.getGroupMessages(groupId));
     }
 
     @PostMapping("/{groupId}/send")
-    public GroupMessage sendMessages(@PathVariable Integer groupId, @RequestBody GroupMessage groupMessage) {
-        // Check if the authenticated user is part of the group
+    public ResponseEntity<?> sendMessages(@PathVariable String groupId, @RequestBody GroupMessage groupMessage) {
         String authenticatedEmail = getAuthenticatedUserEmail();
+        groupMessage.setGroupId(groupId);
+        groupMessage.setSenderEmail(authenticatedEmail);
+        groupMessage.setSentAt(LocalDateTime.now());
         Group group = groupService.getGroupById(groupId);
 
         if (group == null) {
-            throw new IllegalArgumentException("Group not found with ID: " + groupId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Group not found with ID: " + groupId);
         }
 
         if (!group.getUsers().contains(authenticatedEmail)) {
-            throw new IllegalArgumentException("User not authorized to send messages.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("User not authorized to send messages.");
         }
 
-        // Set the sender's email from the authenticated user
-        groupMessage.setSenderEmail(authenticatedEmail);
-
-        return groupService.sendGroupMessage(groupId, groupMessage);
+        GroupMessage savedMessage = groupService.sendGroupMessage(groupId, groupMessage);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedMessage);
     }
 
     @GetMapping("/{groupId}/members")
-    public List<String> getMembers(@PathVariable Integer groupId) {
-        // Check if the authenticated user is part of the group
+    public ResponseEntity<?> getMembers(@PathVariable String groupId) {
         String authenticatedEmail = getAuthenticatedUserEmail();
         Group group = groupService.getGroupById(groupId);
 
         if (group == null) {
-            throw new IllegalArgumentException("Group not found with ID: " + groupId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Group not found with ID: " + groupId);
         }
 
         if (!group.getUsers().contains(authenticatedEmail)) {
-            throw new IllegalArgumentException("User not authorized to view group members.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("User not authorized to view group members.");
         }
 
-        return groupService.getMembers(groupId);
+        List<String> members = groupService.getMembers(groupId);
+        return ResponseEntity.ok(members);
     }
 
     // Helper method to get the authenticated user's email from the security context

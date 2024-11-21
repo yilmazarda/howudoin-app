@@ -2,6 +2,7 @@ package edu.sabanciuniv.howudoin.services;
 
 import edu.sabanciuniv.howudoin.models.Group;
 import edu.sabanciuniv.howudoin.models.GroupMessage;
+import edu.sabanciuniv.howudoin.repositories.GroupMessageRepository;
 import edu.sabanciuniv.howudoin.repositories.GroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,9 @@ public class GroupService {
     @Autowired
     private GroupRepository groupRepository;
 
+    @Autowired
+    private GroupMessageRepository groupMessageRepository;
+
     public List<Group> getAllGroups()
     {
         return groupRepository.findAll();
@@ -23,7 +27,7 @@ public class GroupService {
         groupRepository.save(group);
     }
 
-    public Group getGroupById (Integer groupId) {
+    public Group getGroupById (String groupId) {
         Group group = groupRepository.findById(groupId).orElse(null);
 
         if(group == null) {
@@ -33,7 +37,7 @@ public class GroupService {
         return group;
     }
 
-    public void addMemberToGroup(Integer groupId, String userEmail) {
+    public void addMemberToGroup(String groupId, String userEmail) {
         Group group = groupRepository.findById(groupId).orElse(null);
 
         if(group == null) {
@@ -44,7 +48,7 @@ public class GroupService {
         groupRepository.save(group);
     }
 
-    public List<String> getMembers(Integer groupId) {
+    public List<String> getMembers(String groupId) {
         Group group = groupRepository.findById(groupId).orElse(null);
         if(group == null) {
             throw new RuntimeException("User not found");
@@ -53,7 +57,7 @@ public class GroupService {
         return group.getUsers();
     }
 
-    public List<GroupMessage> getGroupMessages(Integer groupId) {
+    public List<GroupMessage> getGroupMessages(String groupId) {
         Group group = groupRepository.findById(groupId).orElse(null);
         if(group == null) {
             throw new RuntimeException("Group not found");
@@ -62,7 +66,7 @@ public class GroupService {
         return group.getGroupMessages();
     }
 
-     public GroupMessage sendGroupMessage(Integer groupId, GroupMessage groupMessage) {
+     public GroupMessage sendGroupMessage(String groupId, GroupMessage groupMessage) {
         // Fetch the group by ID
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found with ID: " + groupId));
@@ -71,6 +75,7 @@ public class GroupService {
          groupMessage.setGroupId(groupId);
         group.getGroupMessages().add(groupMessage);
 
+        groupMessageRepository.save(groupMessage);
         groupRepository.save(group);
         return groupMessage;
     }

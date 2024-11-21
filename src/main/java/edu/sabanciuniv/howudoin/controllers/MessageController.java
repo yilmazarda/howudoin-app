@@ -18,13 +18,13 @@ public class MessageController {
     private MessageService messageService;
 
     @PostMapping("/send")
-    public ResponseEntity<Void> sendMessage(@RequestBody Message message) {
+    public ResponseEntity<Message> sendMessage(@RequestBody Message message) {
         // Set the sender's email from the authenticated user
         String senderEmail = getAuthenticatedUserEmail();
         message.setSenderEmail(senderEmail);
 
         messageService.sendMessage(message);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(message);
     }
 
     @GetMapping("")
