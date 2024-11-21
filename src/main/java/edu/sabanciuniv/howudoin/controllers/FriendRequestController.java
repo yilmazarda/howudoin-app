@@ -47,15 +47,23 @@ public class FriendRequestController {
 
     // Endpoint to accept a friend request
     @PostMapping("/friends/accept")
-    public ResponseEntity<Void> acceptFriendRequest(@RequestBody String requestId) {
+    public ResponseEntity<?> acceptFriendRequest(@RequestBody String requestId) {
         String authenticatedEmail = getAuthenticatedUserEmail();
+        System.out.println("Authenticated Email: " + authenticatedEmail);
 
         // Get the friend request by its ID
-        FriendRequest friendRequest = friendRequestService.getFriendRequestById(requestId);
+        FriendRequest friendRequest = friendRequestService.getFriendRequestById(requestId)
+                .orElse(null);
 
-        // Ensure that the authenticated user is the receiver of the request
-        if (friendRequest == null || !authenticatedEmail.equals(friendRequest.getReceiverEmail())) {
-            return ResponseEntity.status(403).build(); // Forbidden if the user is not the receiver
+
+        if (friendRequest == null) {
+            System.err.println("No friend request found with ID: " + requestId);
+            return ResponseEntity.status(404).body("Friend request not found");
+        }
+
+        if (!authenticatedEmail.equals(friendRequest.getReceiverEmail())) {
+            System.err.println("Unauthorized access. Authenticated email: " + authenticatedEmail);
+            return ResponseEntity.status(403).body("You are not authorized to accept this request");
         }
 
         // Accept the friend request
@@ -66,7 +74,7 @@ public class FriendRequestController {
         String receiverEmail = friendRequest.getReceiverEmail();
         userService.addFriendByEmail(senderEmail, receiverEmail);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Friend request is accepted.");
     }
 
     // Helper method to get the authenticated user's email from the security context

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FriendRequestService {
@@ -23,29 +24,17 @@ public class FriendRequestService {
     }
 
     public void acceptFriendRequest(String friendRequestId) {
-        FriendRequest friendRequest = friendRequestRepository.findById(friendRequestId).get();
-        if(friendRequest == null)
-        {
-            throw new RuntimeException("Friend request not found");
-        }
-        else
-        {
-            friendRequest.setAccepted(true);
-            friendRequestRepository.delete(friendRequest);
-        }
+        FriendRequest friendRequest = friendRequestRepository.findById(friendRequestId)
+                .orElseThrow(() -> new RuntimeException("Friend request not found"));
+
+        friendRequest.setAccepted(true);
+        friendRequestRepository.delete(friendRequest); // Eğer kabul edilen talepleri silmeniz gerekiyorsa bu satır doğru.
     }
 
-    public FriendRequest getFriendRequestById(String friendRequestId) {
-        FriendRequest friendRequest = friendRequestRepository.findById(friendRequestId).get();
-        if(friendRequest == null)
-        {
-            throw new RuntimeException("Friend request not found");
-        }
-        else
-        {
-            return friendRequest;
-        }
+    public Optional<FriendRequest> getFriendRequestById(String friendRequestId) {
+        return friendRequestRepository.findById(friendRequestId);
     }
+
 
     public List<FriendRequest> getFriendRequestsByUserEmail(String email) {
         // Fetch all friend requests where the user is either the sender or the receiver
