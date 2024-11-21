@@ -4,6 +4,7 @@ package edu.sabanciuniv.howudoin.models;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 
 
 @Data
@@ -11,7 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 
 public class FriendRequest {
-    private int id;
+    @Id
+    private String id;
     private String receiverEmail;
     private String senderEmail;
     private Boolean accepted;

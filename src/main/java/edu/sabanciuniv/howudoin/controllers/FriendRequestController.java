@@ -34,6 +34,7 @@ public class FriendRequestController {
     @PostMapping("/friends/add")
     public ResponseEntity<FriendRequest> addRequest(@RequestBody FriendRequest friendRequest) {
         String authenticatedEmail = getAuthenticatedUserEmail();
+        friendRequest.setSenderEmail(authenticatedEmail);
 
         // Only allow the authenticated user to send a request
         if (!authenticatedEmail.equals(friendRequest.getSenderEmail())) {
@@ -46,7 +47,7 @@ public class FriendRequestController {
 
     // Endpoint to accept a friend request
     @PostMapping("/friends/accept")
-    public ResponseEntity<Void> acceptFriendRequest(@RequestBody int requestId) {
+    public ResponseEntity<Void> acceptFriendRequest(@RequestBody String requestId) {
         String authenticatedEmail = getAuthenticatedUserEmail();
 
         // Get the friend request by its ID

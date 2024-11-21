@@ -22,7 +22,7 @@ public class FriendRequestService {
         friendRequestRepository.save(friendRequest);
     }
 
-    public void acceptFriendRequest(int friendRequestId) {
+    public void acceptFriendRequest(String friendRequestId) {
         FriendRequest friendRequest = friendRequestRepository.findById(friendRequestId).get();
         if(friendRequest == null)
         {
@@ -35,7 +35,7 @@ public class FriendRequestService {
         }
     }
 
-    public FriendRequest getFriendRequestById(int friendRequestId) {
+    public FriendRequest getFriendRequestById(String friendRequestId) {
         FriendRequest friendRequest = friendRequestRepository.findById(friendRequestId).get();
         if(friendRequest == null)
         {
