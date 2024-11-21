@@ -41,10 +41,8 @@ public class AuthController {
             );
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-            System.out.println("Authenticated user: " + userDetails.getUsername());
 
             String jwt = jwtUtil.generateToken(userDetails.getUsername());
-            System.out.println("Generated JWT: " + jwt);
 
             return ResponseEntity.ok(new AuthenticationResponse(jwt));
         } catch (Exception e) {

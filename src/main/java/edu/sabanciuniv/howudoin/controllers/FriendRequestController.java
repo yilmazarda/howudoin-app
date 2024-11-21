@@ -3,6 +3,7 @@ package edu.sabanciuniv.howudoin.controllers;
 import edu.sabanciuniv.howudoin.models.FriendRequest;
 import edu.sabanciuniv.howudoin.services.FriendRequestService;
 import edu.sabanciuniv.howudoin.services.UserService;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class FriendRequestController {
@@ -47,19 +49,13 @@ public class FriendRequestController {
 
     // Endpoint to accept a friend request
     @PostMapping("/friends/accept")
-    public ResponseEntity<?> acceptFriendRequest(@RequestBody String requestId) {
+    public ResponseEntity<?> acceptFriendRequest(@RequestBody ObjectId requestId) {
         String authenticatedEmail = getAuthenticatedUserEmail();
-        System.out.println("Authenticated Email: " + authenticatedEmail);
 
         // Get the friend request by its ID
-        FriendRequest friendRequest = friendRequestService.getFriendRequestById(requestId)
-                .orElse(null);
+        Optional<FriendRequest> friendRequestOpt = friendRequestService.getFriendRequestById(requestId);
 
-
-        if (friendRequest == null) {
-            System.err.println("No friend request found with ID: " + requestId);
-            return ResponseEntity.status(404).body("Friend request not found");
-        }
+        FriendRequest friendRequest = friendRequestOpt.get();
 
         if (!authenticatedEmail.equals(friendRequest.getReceiverEmail())) {
             System.err.println("Unauthorized access. Authenticated email: " + authenticatedEmail);

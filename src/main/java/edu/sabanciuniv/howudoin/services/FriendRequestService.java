@@ -2,6 +2,7 @@ package edu.sabanciuniv.howudoin.services;
 
 import edu.sabanciuniv.howudoin.models.FriendRequest;
 import edu.sabanciuniv.howudoin.repositories.FriendRequestRepository;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,19 +21,29 @@ public class FriendRequestService {
     }
 
     public void addFriendRequest(FriendRequest friendRequest) {
+        friendRequest.setAccepted(false);
         friendRequestRepository.save(friendRequest);
     }
 
-    public void acceptFriendRequest(String friendRequestId) {
-        FriendRequest friendRequest = friendRequestRepository.findById(friendRequestId)
-                .orElseThrow(() -> new RuntimeException("Friend request not found"));
-
-        friendRequest.setAccepted(true);
-        friendRequestRepository.delete(friendRequest); // Eğer kabul edilen talepleri silmeniz gerekiyorsa bu satır doğru.
+    public void acceptFriendRequest(ObjectId friendRequestId) {
+        Optional<FriendRequest> friendRequestOpt = friendRequestRepository.findById(friendRequestId);
+        if(friendRequestOpt.isPresent()) {
+            FriendRequest friendRequest = friendRequestOpt.get();
+            friendRequest.setAccepted(true);
+            friendRequestRepository.save(friendRequest);
+        }
+        else {
+            throw new RuntimeException("Friend request with ID " + friendRequestId + " not found");
+        }
     }
 
-    public Optional<FriendRequest> getFriendRequestById(String friendRequestId) {
-        return friendRequestRepository.findById(friendRequestId);
+    public Optional<FriendRequest> getFriendRequestById(ObjectId friendRequestId) {
+        Optional<FriendRequest> friendRequestOpt = friendRequestRepository.findById(friendRequestId);
+        if (friendRequestOpt.isPresent()) {
+            return friendRequestOpt;
+        } else {
+            throw new RuntimeException("Friend request not found for ID: " + friendRequestId);
+        }
     }
 
 
