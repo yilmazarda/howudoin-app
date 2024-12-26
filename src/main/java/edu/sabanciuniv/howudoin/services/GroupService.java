@@ -79,4 +79,8 @@ public class GroupService {
         groupRepository.save(group);
         return groupMessage;
     }
+
+    public List<Group> findByUserId(String email) {
+        return groupRepository.findByUsersContains(email);
+    }
 }

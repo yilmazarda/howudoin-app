@@ -1,7 +1,9 @@
 package edu.sabanciuniv.howudoin.controllers;
 
 
+import edu.sabanciuniv.howudoin.models.Group;
 import edu.sabanciuniv.howudoin.models.User;
+import edu.sabanciuniv.howudoin.services.GroupService;
 import edu.sabanciuniv.howudoin.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +17,15 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private GroupService groupService;
+
+    @GetMapping("/groups")
+    public List<Group> getGroupsByUserEmail(@RequestParam String email) {
+        // Logic to fetch groups where the user's email is in the `users` list
+        return groupService.findByUserId(email);
+    }
 
     @GetMapping("/user")
     public List<User> getAllUsers()

@@ -33,6 +33,11 @@ public class GroupController {
         return ResponseEntity.ok(group);
     }
 
+    @GetMapping("/{groupId}")
+    public ResponseEntity<Group> getGroup(@PathVariable String groupId) {
+        return ResponseEntity.ok(groupService.getGroupById(groupId));
+    }
+
     @PostMapping("/{groupId}/add-member")
     public ResponseEntity<?> addMemberToGroup(@PathVariable String groupId, @RequestParam String memberEmail) {
         // Check if the authenticated user is part of the group
