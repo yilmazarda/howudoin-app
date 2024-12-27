@@ -45,16 +45,26 @@ public class FriendRequestController {
     }
 
     @PostMapping("/friends/add")
-    public ResponseEntity<FriendRequest> addRequest(@RequestBody FriendRequest friendRequest) {
+    public ResponseEntity<?> addRequest(@RequestBody FriendRequest friendRequest) {
         String authenticatedEmail = getAuthenticatedUserEmail();
         friendRequest.setSenderEmail(authenticatedEmail);
 
         if (!authenticatedEmail.equals(friendRequest.getSenderEmail())) {
-            return ResponseEntity.status(403).body(null);
+            return ResponseEntity.status(403)
+                    .body(Map.of("message", "Unauthorized request"));
         }
 
-        friendRequestService.addFriendRequest(friendRequest);
-        return ResponseEntity.ok(friendRequest);
+        try {
+            friendRequestService.addFriendRequest(friendRequest);
+            return ResponseEntity.ok()
+                    .body(Map.of("message", "Friend request sent successfully", "data", friendRequest));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Failed to send friend request: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/friends/accept")
@@ -68,20 +78,27 @@ public class FriendRequestController {
             FriendRequest friendRequest = friendRequestOpt.get();
 
             if (!authenticatedEmail.equals(friendRequest.getReceiverEmail())) {
-                return ResponseEntity.status(403).body("You are not authorized to accept this request");
+                return ResponseEntity.status(403)
+                        .body(Map.of("message", "You are not authorized to accept this request"));
             }
 
-            friendRequestService.acceptFriendRequest(requestId);
-
-            String senderEmail = friendRequest.getSenderEmail();
-            String receiverEmail = friendRequest.getReceiverEmail();
-            userService.addFriendByEmail(senderEmail, receiverEmail);
-
-            return ResponseEntity.ok("Friend request is accepted.");
+            try {
+                friendRequestService.acceptFriendRequest(requestId);
+                String senderEmail = friendRequest.getSenderEmail();
+                String receiverEmail = friendRequest.getReceiverEmail();
+                userService.addFriendByEmail(senderEmail, receiverEmail);
+                return ResponseEntity.ok()
+                        .body(Map.of("message", "Friend request accepted successfully"));
+            } catch (IllegalStateException e) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", e.getMessage()));
+            }
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid ObjectId format.");
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Invalid ObjectId format"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to accept friend request: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Failed to accept friend request: " + e.getMessage()));
         }
     }
 
@@ -94,22 +111,26 @@ public class FriendRequestController {
             Optional<FriendRequest> friendRequestOpt = friendRequestService.getFriendRequestById(requestId);
 
             if (!friendRequestOpt.isPresent()) {
-                return ResponseEntity.badRequest().body("Friend request not found");
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Friend request not found"));
             }
 
             FriendRequest friendRequest = friendRequestOpt.get();
 
             if (!authenticatedEmail.equals(friendRequest.getReceiverEmail())) {
-                return ResponseEntity.status(403).body("You are not authorized to reject this request");
+                return ResponseEntity.status(403)
+                        .body(Map.of("message", "You are not authorized to reject this request"));
             }
 
             friendRequestService.rejectFriendRequest(requestId);
-            return ResponseEntity.ok("Friend request is rejected.");
+            return ResponseEntity.ok()
+                    .body(Map.of("message", "Friend request rejected successfully"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid ObjectId format.");
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Invalid ObjectId format"));
         } catch (Exception e) {
-            System.err.println("Error rejecting friend request: " + e.getMessage());
-            return ResponseEntity.badRequest().body("Failed to reject friend request: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Failed to reject friend request: " + e.getMessage()));
         }
     }
 

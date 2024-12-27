@@ -15,11 +15,33 @@ public class FriendRequestService {
     @Autowired
     private FriendRequestRepository friendRequestRepository;
 
+    @Autowired
+    private UserService userService; // Add this to check if users are already friends
+
     public List<FriendRequest> getAllFriendRequests() {
         return friendRequestRepository.findAll();
     }
 
     public void addFriendRequest(FriendRequest friendRequest) {
+        // Check if users are already friends
+        if (userService.areFriends(friendRequest.getSenderEmail(), friendRequest.getReceiverEmail())) {
+            throw new IllegalStateException("You are already friends with this user");
+        }
+
+        // Check if there's an existing pending request
+        List<FriendRequest> existingRequests = friendRequestRepository.findBySenderEmailOrReceiverEmail(
+                friendRequest.getSenderEmail(),
+                friendRequest.getReceiverEmail()
+        );
+
+        for (FriendRequest existing : existingRequests) {
+            if (existing.getSenderEmail().equals(friendRequest.getSenderEmail())
+                    && existing.getReceiverEmail().equals(friendRequest.getReceiverEmail())
+                    && !existing.getAccepted()) {
+                throw new IllegalStateException("A friend request to this user already exists");
+            }
+        }
+
         friendRequest.setAccepted(false);
         friendRequestRepository.save(friendRequest);
     }
@@ -28,6 +50,13 @@ public class FriendRequestService {
         Optional<FriendRequest> friendRequestOpt = friendRequestRepository.findById(friendRequestId);
         if(friendRequestOpt.isPresent()) {
             FriendRequest friendRequest = friendRequestOpt.get();
+
+            // Check if they're already friends (in case of concurrent requests)
+            if (userService.areFriends(friendRequest.getSenderEmail(), friendRequest.getReceiverEmail())) {
+                friendRequestRepository.deleteById(friendRequestId);
+                throw new IllegalStateException("You are already friends with this user");
+            }
+
             friendRequest.setAccepted(true);
             friendRequestRepository.save(friendRequest);
         }
@@ -56,6 +85,6 @@ public class FriendRequestService {
     }
 
     public List<FriendRequest> getFriendRequestsByUserEmail(String email) {
-        return friendRequestRepository.findBySenderEmailOrReceiverEmail(email, email);
+        return friendRequestRepository.findByReceiverEmail(email);
     }
 }
