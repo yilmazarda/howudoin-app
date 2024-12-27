@@ -14,85 +14,105 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 public class FriendRequestController {
-
     @Autowired
     private FriendRequestService friendRequestService;
 
     @Autowired
     private UserService userService;
 
-    // Endpoint to get all friend requests for the authenticated user
+    // DTO to handle the incoming request
+    private static class FriendRequestIdDTO {
+        private String id;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+    }
+
     @GetMapping("/requests")
     public List<FriendRequest> getAllFriendRequests() {
         String authenticatedEmail = getAuthenticatedUserEmail();
         return friendRequestService.getFriendRequestsByUserEmail(authenticatedEmail);
     }
 
-    // Endpoint to add a friend request from the authenticated user
     @PostMapping("/friends/add")
     public ResponseEntity<FriendRequest> addRequest(@RequestBody FriendRequest friendRequest) {
         String authenticatedEmail = getAuthenticatedUserEmail();
         friendRequest.setSenderEmail(authenticatedEmail);
 
-        // Only allow the authenticated user to send a request
         if (!authenticatedEmail.equals(friendRequest.getSenderEmail())) {
-            return ResponseEntity.status(403).body(null); // Forbidden if the sender does not match
+            return ResponseEntity.status(403).body(null);
         }
 
         friendRequestService.addFriendRequest(friendRequest);
         return ResponseEntity.ok(friendRequest);
     }
 
-    // Endpoint to accept a friend request
     @PostMapping("/friends/accept")
-    public ResponseEntity<?> acceptFriendRequest(@RequestBody ObjectId requestId) {
+    public ResponseEntity<?> acceptFriendRequest(@RequestBody FriendRequestIdDTO requestBody) {
         String authenticatedEmail = getAuthenticatedUserEmail();
 
-        // Get the friend request by its ID
-        Optional<FriendRequest> friendRequestOpt = friendRequestService.getFriendRequestById(requestId);
+        try {
+            ObjectId requestId = new ObjectId(requestBody.getId());
+            Optional<FriendRequest> friendRequestOpt = friendRequestService.getFriendRequestById(requestId);
 
-        FriendRequest friendRequest = friendRequestOpt.get();
+            FriendRequest friendRequest = friendRequestOpt.get();
 
-        if (!authenticatedEmail.equals(friendRequest.getReceiverEmail())) {
-            System.err.println("Unauthorized access. Authenticated email: " + authenticatedEmail);
-            return ResponseEntity.status(403).body("You are not authorized to accept this request");
+            if (!authenticatedEmail.equals(friendRequest.getReceiverEmail())) {
+                return ResponseEntity.status(403).body("You are not authorized to accept this request");
+            }
+
+            friendRequestService.acceptFriendRequest(requestId);
+
+            String senderEmail = friendRequest.getSenderEmail();
+            String receiverEmail = friendRequest.getReceiverEmail();
+            userService.addFriendByEmail(senderEmail, receiverEmail);
+
+            return ResponseEntity.ok("Friend request is accepted.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid ObjectId format.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to accept friend request: " + e.getMessage());
         }
-
-        // Accept the friend request
-        friendRequestService.acceptFriendRequest(requestId);
-
-        // Add the users as friends in the system
-        String senderEmail = friendRequest.getSenderEmail();
-        String receiverEmail = friendRequest.getReceiverEmail();
-        userService.addFriendByEmail(senderEmail, receiverEmail);
-
-        return ResponseEntity.ok("Friend request is accepted.");
     }
 
     @PostMapping("/friends/reject")
-    public ResponseEntity<?> rejectFriendRequest(@RequestBody ObjectId requestId) {
+    public ResponseEntity<?> rejectFriendRequest(@RequestBody FriendRequestIdDTO requestBody) {
         String authenticatedEmail = getAuthenticatedUserEmail();
 
-        Optional<FriendRequest> friendRequestOpt = friendRequestService.getFriendRequestById(requestId);
-        if (friendRequestOpt.isEmpty()) {
-            return ResponseEntity.status(404).body("Friend request not found");
+        try {
+            ObjectId requestId = new ObjectId(requestBody.getId());
+            Optional<FriendRequest> friendRequestOpt = friendRequestService.getFriendRequestById(requestId);
+
+            if (!friendRequestOpt.isPresent()) {
+                return ResponseEntity.badRequest().body("Friend request not found");
+            }
+
+            FriendRequest friendRequest = friendRequestOpt.get();
+
+            if (!authenticatedEmail.equals(friendRequest.getReceiverEmail())) {
+                return ResponseEntity.status(403).body("You are not authorized to reject this request");
+            }
+
+            friendRequestService.rejectFriendRequest(requestId);
+            return ResponseEntity.ok("Friend request is rejected.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid ObjectId format.");
+        } catch (Exception e) {
+            System.err.println("Error rejecting friend request: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Failed to reject friend request: " + e.getMessage());
         }
-
-        FriendRequest friendRequest = friendRequestOpt.get();
-
-        if (!authenticatedEmail.equals(friendRequest.getReceiverEmail())) {
-            return ResponseEntity.status(403).body("You are not authorized to reject this request");
-        }
-
-        friendRequestService.rejectFriendRequest(requestId);
-        return ResponseEntity.ok("Friend request is rejected.");
     }
 
-    // Helper method to get the authenticated user's email from the security context
     private String getAuthenticatedUserEmail() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof UserDetails) {

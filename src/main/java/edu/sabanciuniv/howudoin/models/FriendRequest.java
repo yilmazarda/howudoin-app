@@ -2,6 +2,8 @@ package edu.sabanciuniv.howudoin.models;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +17,7 @@ import org.springframework.data.annotation.Id;
 
 public class FriendRequest {
     @Id
-    private ObjectId id;
+    private String id;
 
     private String receiverEmail;
     private String senderEmail;
