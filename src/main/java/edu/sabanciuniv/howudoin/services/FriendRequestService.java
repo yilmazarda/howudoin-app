@@ -30,7 +30,18 @@ public class FriendRequestService {
         if(friendRequestOpt.isPresent()) {
             FriendRequest friendRequest = friendRequestOpt.get();
             friendRequest.setAccepted(true);
-            friendRequestRepository.save(friendRequest);
+            friendRequestRepository.delete(friendRequest);
+        }
+        else {
+            throw new RuntimeException("Friend request with ID " + friendRequestId + " not found");
+        }
+    }
+
+    public void rejectFriendRequest(ObjectId friendRequestId) {
+        Optional<FriendRequest> friendRequestOpt = friendRequestRepository.findById(friendRequestId);
+        if(friendRequestOpt.isPresent()) {
+            FriendRequest friendRequest = friendRequestOpt.get();
+            friendRequestRepository.delete(friendRequest);
         }
         else {
             throw new RuntimeException("Friend request with ID " + friendRequestId + " not found");
@@ -49,6 +60,6 @@ public class FriendRequestService {
 
     public List<FriendRequest> getFriendRequestsByUserEmail(String email) {
         // Fetch all friend requests where the user is either the sender or the receiver
-        return friendRequestRepository.findBySenderEmailOrReceiverEmail(email, email);
+        return friendRequestRepository.findByReceiverEmail(email);
     }
 }

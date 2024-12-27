@@ -15,7 +15,6 @@ import org.springframework.data.annotation.Id;
 
 public class FriendRequest {
     @Id
-    @JsonIgnore
     private ObjectId id;
 
     private String receiverEmail;

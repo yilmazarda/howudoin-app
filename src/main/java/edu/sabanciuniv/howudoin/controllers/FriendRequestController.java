@@ -73,6 +73,25 @@ public class FriendRequestController {
         return ResponseEntity.ok("Friend request is accepted.");
     }
 
+    @PostMapping("/friends/reject")
+    public ResponseEntity<?> rejectFriendRequest(@RequestBody ObjectId requestId) {
+        String authenticatedEmail = getAuthenticatedUserEmail();
+
+        Optional<FriendRequest> friendRequestOpt = friendRequestService.getFriendRequestById(requestId);
+        if (friendRequestOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Friend request not found");
+        }
+
+        FriendRequest friendRequest = friendRequestOpt.get();
+
+        if (!authenticatedEmail.equals(friendRequest.getReceiverEmail())) {
+            return ResponseEntity.status(403).body("You are not authorized to reject this request");
+        }
+
+        friendRequestService.rejectFriendRequest(requestId);
+        return ResponseEntity.ok("Friend request is rejected.");
+    }
+
     // Helper method to get the authenticated user's email from the security context
     private String getAuthenticatedUserEmail() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
