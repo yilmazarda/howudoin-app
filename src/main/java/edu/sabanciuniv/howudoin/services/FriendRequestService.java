@@ -58,7 +58,7 @@ public class FriendRequestService {
             }
 
             friendRequest.setAccepted(true);
-            friendRequestRepository.save(friendRequest);
+            friendRequestRepository.delete(friendRequest);
         }
         else {
             throw new RuntimeException("Friend request with ID " + friendRequestId + " not found");
