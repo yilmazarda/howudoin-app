@@ -28,10 +28,10 @@ public class MessageController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<Message>> getMessages() {
+    public ResponseEntity<List<Message>> getMessages(@RequestParam String email) {
         // Use the authenticated user's email to fetch their messages
         String userEmail = getAuthenticatedUserEmail();
-        List<Message> messages = messageService.getMessages(userEmail);
+        List<Message> messages = messageService.getMessages(userEmail, email);
         return ResponseEntity.ok(messages);
     }
 

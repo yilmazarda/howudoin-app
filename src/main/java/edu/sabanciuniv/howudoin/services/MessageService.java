@@ -18,10 +18,10 @@ public class MessageService {
         messageRepository.save(message);
     }
 
-    public List<Message> getMessages(String userEmail) {
+    public List<Message> getMessages(String userEmail, String friendEmail) {
         // Retrieve messages sent and received by the user
-        List<Message> messageList = messageRepository.findBySenderEmail(userEmail);
-        messageList.addAll(messageRepository.findByReceiverEmail(userEmail));
+        List<Message> messageList = messageRepository.findByReceiverEmailAndSenderEmail(userEmail, friendEmail);
+        messageList.addAll(messageRepository.findBySenderEmailAndReceiverEmail(userEmail, friendEmail));
 
         // Sort the messages by their id in ascending order
         messageList.sort(Comparator.comparing(Message::getId));
